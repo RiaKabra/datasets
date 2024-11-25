@@ -120,8 +120,8 @@ if columns:
                     ax.set_ylabel(column)
                     ax.set_title(f"Line Graph of {column}")
                     st.pyplot(fig)
-    else:
-        st.warning("Line graphs are not supported for this data type.")
+                else:
+                    st.warning("Line graphs are not supported for this data type.")
 
 
         else:
