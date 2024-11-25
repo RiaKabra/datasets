@@ -103,12 +103,26 @@ if columns:
 
             elif chart_type == 'Line Graph':
                 st.write(f"### Line Graph for {column}")
-                fig, ax = plt.subplots()
-                ax.plot(df[column].reset_index(drop=True), marker='o', linestyle='-', color='b')
-                ax.set_title(f"Line Graph of {column}")
-                ax.set_ylabel(column)
-                ax.set_xlabel("Index")
-                st.pyplot(fig)
+            
+                if df[column].dtype == 'object':  # If categorical, count occurrences
+                    encoded_data = df[column].value_counts().sort_index()  # Aggregates and sorts by category
+                    fig, ax = plt.subplots()
+                    ax.plot(encoded_data.index, encoded_data.values, marker='o', linestyle='-', color='b')
+                    ax.set_xlabel(column)
+                    ax.set_ylabel("Count")
+                    ax.set_title(f"Line Graph of {column}")
+                    st.pyplot(fig)
+            
+                elif pd.api.types.is_numeric_dtype(df[column]):  # If numeric, plot the values directly
+                    fig, ax = plt.subplots()
+                    ax.plot(df[column].sort_values().reset_index(drop=True), marker='o', linestyle='-', color='b')
+                    ax.set_xlabel("Index")
+                    ax.set_ylabel(column)
+                    ax.set_title(f"Line Graph of {column}")
+                    st.pyplot(fig)
+    else:
+        st.warning("Line graphs are not supported for this data type.")
+
 
         else:
             st.warning(f"Column {column} cannot be visualized with the selected options.")
