@@ -81,9 +81,18 @@ if columns:
 
             elif chart_type == 'Line Graph':
                 st.write(f"### Line Graph for {column}")
-                fig, ax = plt.subplots()
-                ax.plot(df[column])
-                st.pyplot(fig)
+                # Aggregate data or sort by an index
+                if df[column].dtype == 'int64' or df[column].dtype == 'float64':
+                    df_sorted = df[column].reset_index(drop=True)  # Reset the index for a clean line
+                    fig, ax = plt.subplots()
+                    ax.plot(df_sorted, marker='o', linestyle='-', color='b')  # Add a smoother line
+                    ax.set_title(f"Line Graph of {column}")
+                    ax.set_ylabel(column)
+                    ax.set_xlabel("Index")
+                    st.pyplot(fig)
+                else:
+                    st.warning("Line Graphs are best suited for numeric or sequential data.")
+
 
         else:
             st.warning(f"Column {column} cannot be visualized with the selected options.")
