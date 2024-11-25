@@ -8,7 +8,7 @@ st.write("Choose from pre-existing datasets and explore insights through visuali
 
 # Step 1: Predefined Dataset Options
 datasets = {
-    "Employee Data":"Employee_Data.csv",
+    "Employee Data": "Employee_Data.csv",  # Ensure this file is in the same directory
 }
 
 # Step 2: Select Dataset
@@ -16,42 +16,76 @@ dataset_name = st.selectbox("Select a Dataset", list(datasets.keys()))
 selected_dataset_path = datasets[dataset_name]
 
 # Step 3: Load the Selected Dataset
-df = pd.read_csv(selected_dataset_path)
-st.write("### Dataset Preview")
-st.dataframe(df)
+try:
+    df = pd.read_csv(selected_dataset_path)
+    st.write("### Dataset Preview")
+    st.dataframe(df)
+except FileNotFoundError:
+    st.error(f"The file '{selected_dataset_path}' was not found. Please ensure it is uploaded.")
 
-# Step 4: Visualization Options
-numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
-st.write("### Select Columns for Visualization")
-if len(numeric_columns) > 0:
-    column = st.selectbox("Choose a column", numeric_columns)
+# Step 4: Column Selection
+st.write("### Select Columns for Analysis")
+columns = st.multiselect("Choose one or more columns", df.columns)
 
+if columns:
+    st.write("### Selected Columns Data")
+    st.dataframe(df[columns])
+
+    # Step 5: Visualization Options
     st.write("### Choose a Visualization Type")
     chart_type = st.radio(
         "Select Chart Type:",
-        ('Pie Chart', 'Bar Chart', 'Line Graph')
+        ('Bar Chart', 'Pie Chart', 'Line Graph')
     )
 
-    # Generate and Display Chart
-    if chart_type == 'Pie Chart':
-        st.write(f"### Pie Chart for {column}")
-        pie_data = df[column].value_counts()
-        fig, ax = plt.subplots()
-        ax.pie(pie_data, labels=pie_data.index, autopct='%1.1f%%')
-        st.pyplot(fig)
+    # Process each selected column
+    for column in columns:
+        st.write(f"## Analysis for Column: {column}")
 
-    elif chart_type == 'Bar Chart':
-        st.write(f"### Bar Chart for {column}")
-        bar_data = df[column].value_counts()
-        fig, ax = plt.subplots()
-        ax.bar(bar_data.index, bar_data.values)
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+        # Handle Categorical Data
+        if df[column].dtype == 'object':  # Categorical data
+            st.write(f"### Categorical Data: {column}")
+            value_counts = df[column].value_counts()
 
-    elif chart_type == 'Line Graph':
-        st.write(f"### Line Graph for {column}")
-        fig, ax = plt.subplots()
-        ax.plot(df[column])
-        st.pyplot(fig)
+            if chart_type == 'Bar Chart':
+                st.write(f"### Bar Chart for {column}")
+                fig, ax = plt.subplots()
+                ax.bar(value_counts.index, value_counts.values)
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+
+            elif chart_type == 'Pie Chart':
+                st.write(f"### Pie Chart for {column}")
+                fig, ax = plt.subplots()
+                ax.pie(value_counts, labels=value_counts.index, autopct='%1.1f%%')
+                st.pyplot(fig)
+
+        # Handle Numeric Data
+        elif pd.api.types.is_numeric_dtype(df[column]):  # Numeric data
+            st.write(f"### Numeric Data: {column}")
+            
+            if chart_type == 'Bar Chart':
+                st.write(f"### Bar Chart for {column}")
+                value_counts = df[column].value_counts()
+                fig, ax = plt.subplots()
+                ax.bar(value_counts.index, value_counts.values)
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+
+            elif chart_type == 'Pie Chart':
+                st.write(f"### Pie Chart for {column}")
+                value_counts = df[column].value_counts()
+                fig, ax = plt.subplots()
+                ax.pie(value_counts, labels=value_counts.index, autopct='%1.1f%%')
+                st.pyplot(fig)
+
+            elif chart_type == 'Line Graph':
+                st.write(f"### Line Graph for {column}")
+                fig, ax = plt.subplots()
+                ax.plot(df[column])
+                st.pyplot(fig)
+
+        else:
+            st.warning(f"Column {column} cannot be visualized with the selected options.")
 else:
-    st.write("No numeric columns available for visualization.")
+    st.write("Select at least one column to analyze.")
