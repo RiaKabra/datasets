@@ -8,7 +8,7 @@ st.write("Choose from pre-existing datasets and explore insights through visuali
 
 # Step 1: Predefined Dataset Options
 datasets = {
-    "Employee Data": r"C:\Users\riaka\Downloads\Employee_Data.csv",
+    "Employee Data":"Employee_Data.csv",
 }
 
 # Step 2: Select Dataset
